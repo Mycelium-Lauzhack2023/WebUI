@@ -1,15 +1,24 @@
 <template>
-    <b-container fluid>
-        <b-row id="render-container" ref="twoContainer">
-        </b-row>
-        <b-row id="buttons-row">
-            <b-button-group>
-                <b-button>Create Zone</b-button>
-                <b-button>Remove Zone</b-button>
-                <b-button>Assign</b-button>
-            </b-button-group>
-        </b-row>
-    </b-container>
+    <div>
+        <b-container fluid>
+            <b-row id="render-container" ref="twoContainer">
+            </b-row>
+            <b-row id="buttons-row">
+                <b-button-group>
+                    <b-button>Create Zone</b-button>
+                    <b-button>Remove Zone</b-button>
+                    <b-button @click="showModal">Assign</b-button>
+                </b-button-group>
+            </b-row>
+        </b-container>
+        <b-modal hide-footer v-model="modalVisible" title="My Modal">
+            <b-list-group>
+                <b-list-group-item v-for="agent in agents" :key="agent.name" @click="selectAgent(agent.id)">
+                    {{ agent.name }}
+                </b-list-group-item> 
+            </b-list-group>
+        </b-modal>
+    </div>
 </template>
 
 <script>
@@ -20,6 +29,7 @@
         name: 'MyceliumUi',
         data: () => {
             return {
+                modalVisible: false,
                 agents: []
             }
         },
@@ -28,16 +38,16 @@
             this.two = new Two({
                 type: Two.Types.canvas,
                 fitted: true,
-                autostart: true
+                autostart: false
             });
 
             // Append the Two.js drawing to the DOM
             this.two.appendTo(this.$refs.twoContainer);
 
             // Create a spinning square
-            this.agents.push(this.createNewAgent(50, 50));
-            this.agents.push(this.createNewAgent(50,150));
-            this.agents.push(this.createNewAgent(50,250));
+            this.agents.push(this.createNewAgent(50, 50, "Agent 1"));
+            this.agents.push(this.createNewAgent(50,150, "Agent 2"));
+            this.agents.push(this.createNewAgent(50,250, "Agent 3"));
 
             this.createNewZone(60,60,200,200);
 
@@ -60,7 +70,7 @@
                 // Request the next animation frame
                 requestAnimationFrame(this.animate);
             },
-            createNewAgent(x, y) {
+            createNewAgent(x, y, name) {
                 const square = this.two.makeRectangle(x,y, 50, 50);
                 square.fill = "#3498db";
                 square.noStroke;
@@ -68,7 +78,8 @@
 
                 return {
                     id: uuid.v4(),
-                    shape: square
+                    shape: square,
+                    name: name
                 };
             },
             createNewZone(x1, y1, x2, y2) {
@@ -95,6 +106,16 @@
                     agent.shape.position.y = y;
                 }           
             },
+            showModal() {
+                this.modalVisible = true;
+            },
+            hideModal() {
+                this.modalVisible = false;
+            },
+            selectAgent(agentId) {
+                this.hideModal();
+                console.log(agentId);
+            }
         },
         beforeDestroy() {
             // Remove the Two.js instance and clean up resources
@@ -106,13 +127,13 @@
 </script>
 
 <style>
-    #render-container {
-        height: 90vh; /* 90% of the viewport height */
-        background-color: #f0f0f0; /* Set a background color for the canvas */
-    }
+#render-container {
+    height: 90vh; /* 90% of the viewport height */
+    background-color: #f0f0f0; /* Set a background color for the canvas */
+}
 
     /* Custom styles for the buttons row */
     #buttons-row {
-      height: 10vh; /* 10% of the viewport height */
+        height: 10vh; /* 10% of the viewport height */
     }
 </style>
