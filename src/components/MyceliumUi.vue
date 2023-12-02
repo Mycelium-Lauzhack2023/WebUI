@@ -1,6 +1,6 @@
 <template>
     <b-container fluid>
-        <b-row id="render-container">
+        <b-row id="render-container" ref="twoContainer">
         </b-row>
         <b-row id="buttons-row">
             <b-button-group>
@@ -17,41 +17,44 @@
     export default {
         name: 'MyceliumUi',
         mounted() {
-            // eslint-disable-next-line
-            const app = new PIXI.Application({
-                background: '#C0B6B4'
-            });
-            
             // Create a new Two.js instance
-            new Two({
-                width: 400,
-                height: 400,
+            this.two = new Two({
+                type: Two.Types.webgl,
+                fitted: true,
+                autostart: true
             });
 
-            document.getElementById('render-container').appendChild(app.view);
+            // Append the Two.js drawing to the DOM
+            this.two.appendTo(this.$refs.twoContainer);
 
-            // create a new Sprite from an image path
-            // eslint-disable-next-line
-            const bunny = PIXI.Sprite.from('https://pixijs.com/assets/bunny.png');
+            // Create a spinning square
+            this.square = this.two.makeRectangle(this.two.width / 2, this.two.height / 2, 100, 100);
+            this.square.fill = '#3498db'; // Set fill color
+            this.square.noStroke();
 
-            // center the sprite's anchor point
-            bunny.anchor.set(0.5);
+            // Update the rendering
+            this.two.update();
 
-            // move the sprite to the center of the screen
-            bunny.x = app.screen.width / 2;
-            bunny.y = app.screen.height / 2;
+            this.animate();
+        },
+        methods: {
+            animate() {
+                // Rotate the square
+                this.square.rotation += 0.02;
 
-            app.stage.addChild(bunny);
+                // Update the rendering
+                this.two.update();
 
-            // Listen for animate update
-            app.ticker.add((delta) =>
-                {
-                    // just for fun, let's rotate mr rabbit a little
-                    // delta is 1 if running at 100% performance
-                    // creates frame-independent transformation
-                    bunny.rotation += 0.1 * delta;
-                });
-        }
+                // Request the next animation frame
+                requestAnimationFrame(this.animate);
+            },
+        },
+        beforeDestroy() {
+            // Remove the Two.js instance and clean up resources
+            if (this.two) {
+                this.two.clear();
+            }
+        },
     };
 </script>
 
