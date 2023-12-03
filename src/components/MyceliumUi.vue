@@ -11,7 +11,7 @@
                 </b-button-group>
             </b-row>
         </b-container>
-        <b-modal hide-footer v-model="modalVisible" title="My Modal">
+        <b-modal hide-footer v-model="modalVisible" title="Zone Assignment">
             <b-list-group>
                 <b-list-group-item v-for="agent in agents" :key="agent.name" @click="selectAgent(agent.id)">
                     {{ agent.name }} ----> {{ agent.zone }}
