@@ -24,6 +24,7 @@
 <script>
     import Two from 'two.js';
     import { uuid } from 'vue-uuid';
+    import image from "../assets/map.png"
 
     export default {
         name: 'MyceliumUi',
@@ -38,11 +39,19 @@
             this.two = new Two({
                 type: Two.Types.canvas,
                 fitted: true,
-                autostart: false
+                autostart: false,
+                width: 400,
+                height: 700
             });
 
             // Append the Two.js drawing to the DOM
             this.two.appendTo(this.$refs.twoContainer);
+
+            // draw map image
+            var texture = new Two.Texture(image);
+            var sprite = new Two.Sprite(texture);
+            sprite.translation.set(this.two.width / 2, this.two.height / 2);
+            this.two.add(sprite);
 
             // Create a spinning square
             this.agents.push(this.createNewAgent(50, 50, "Agent 1"));
