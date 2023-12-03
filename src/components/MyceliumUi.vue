@@ -67,12 +67,13 @@
             let init3 = this.solutions.robot3[0];
 
             // create agents
-            this.agents.push(this.createNewAgent(init1.x, init1.y, "Agent 1", "Zone 1"));
-            this.agents.push(this.createNewAgent(init2.x, init2.y, "Agent 2", "Zone 2"));
-            this.agents.push(this.createNewAgent(init3.x, init3.y, "Agent 3", "Zone 3"));
+            this.agents.push(this.createNewAgent(init1.x, init1.y, "Agent 1", "Zone A"));
+            this.agents.push(this.createNewAgent(init2.x, init2.y, "Agent 2", "Zone B"));
+            this.agents.push(this.createNewAgent(init3.x, init3.y, "Agent 3", "Zone B"));
 
             // create zones
-            this.createNewZone(60,60,200,200);
+            this.createNewZone(50,540,100,590);
+            this.createNewZone(70,150,200,275);
 
             this.animate();
 
@@ -136,8 +137,8 @@
             createNewZone(x1, y1, x2, y2) {
                 let w = x2 - x1;
                 let h = y2 - y1;
-                let x = w / 2;
-                let y = h / 2;
+                let x = x1 + (w / 2);
+                let y = y1 + (h / 2);
 
                 const square = this.two.makeRectangle(x,y, w, h);
                 square.fill = "#b3046a";
