@@ -25,13 +25,16 @@
     import Two from 'two.js';
     import { uuid } from 'vue-uuid';
     import image from "../assets/map.png"
+    import axios from 'axios'
 
     export default {
         name: 'MyceliumUi',
         data: () => {
             return {
                 modalVisible: false,
-                agents: []
+                agents: [],
+                solutions: {},
+                solutionStep: 0
             }
         },
         mounted() {
@@ -53,25 +56,54 @@
             sprite.translation.set(this.two.width / 2, this.two.height / 2);
             this.two.add(sprite);
 
-            // Create a spinning square
-            this.agents.push(this.createNewAgent(50, 50, "Agent 1"));
-            this.agents.push(this.createNewAgent(50,150, "Agent 2"));
-            this.agents.push(this.createNewAgent(50,250, "Agent 3"));
+            // create agents
+            this.agents.push(this.createNewAgent(50, 50, "Agent 1", "Zone 1"));
+            this.agents.push(this.createNewAgent(50,150, "Agent 2", "Zone 2"));
+            this.agents.push(this.createNewAgent(50,250, "Agent 3", "Zone 3"));
 
+            // create zones
             this.createNewZone(60,60,200,200);
 
             this.animate();
+
+            this.getAgentPaths();
         },
         methods: {
+            async getAgentPaths() {
+                let response = await axios.get('http://127.0.0.1:7070/agents')
+                let data = response.data;
+                this.solutions.robot1 = data[0].coordinates;
+                this.solutions.robot2 = data[1].coordinates;
+                this.solutions.robot3 = data[2].coordinates;
+            },
             animate() {
                 // test independent animations
                 let agent1 = this.agents[0];
                 let agent2 = this.agents[1];
                 let agent3 = this.agents[2];
 
-                this.updateAgentPosition(agent1.id, agent1.shape.position.x + 0.2, agent1.shape.position.y);
-                this.updateAgentPosition(agent2.id, agent2.shape.position.x + 0.5, agent2.shape.position.y);
-                this.updateAgentPosition(agent3.id, agent3.shape.position.x + 1, agent3.shape.position.y);
+                // easier to type
+                let sol1 = this.solutions.robot1;
+                let sol2 = this.solutions.robot1;
+                let sol3 = this.solutions.robot1;
+
+                if(sol1 && sol2 && sol3) {
+                    if(sol1.length > this.solutionStep) {
+                        let step = sol1[this.solutionStep]
+                        this.updateAgentPosition(agent1.id, step.x, step.y);
+                    }
+                    if(this.solutions.robot2.length > this.solutionStep) {
+                        let step = sol2[this.solutionStep]
+                        this.updateAgentPosition(agent2.id, step.x, step.y);
+                    }
+                    if(this.solutions.robot3.length > this.solutionStep) {
+                        let step = sol3[this.solutionStep]
+                        this.updateAgentPosition(agent3.id, step.x, step.y);
+                    }
+
+                    this.solutionStep = this.solutionStep + 1;
+                }
+
 
                 // Update the rendering
                 this.two.update();
@@ -79,8 +111,8 @@
                 // Request the next animation frame
                 requestAnimationFrame(this.animate);
             },
-            createNewAgent(x, y, name) {
-                const square = this.two.makeRectangle(x,y, 50, 50);
+            createNewAgent(x, y, name, zone) {
+                const square = this.two.makeRectangle(x,y, 10, 10);
                 square.fill = "#3498db";
                 square.noStroke;
                 this.two.update();
@@ -88,7 +120,8 @@
                 return {
                     id: uuid.v4(),
                     shape: square,
-                    name: name
+                    name: name,
+                    zone: zone
                 };
             },
             createNewZone(x1, y1, x2, y2) {
@@ -136,10 +169,11 @@
 </script>
 
 <style>
-#render-container {
-    height: 90vh; /* 90% of the viewport height */
-    background-color: #f0f0f0; /* Set a background color for the canvas */
-}
+    #render-container {
+        height: 700px;
+        width: 400 px;
+        background-color: #f0f0f0; /* Set a background color for the canvas */
+    }
 
     /* Custom styles for the buttons row */
     #buttons-row {
