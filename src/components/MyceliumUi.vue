@@ -14,9 +14,10 @@
         <b-modal hide-footer v-model="modalVisible" title="My Modal">
             <b-list-group>
                 <b-list-group-item v-for="agent in agents" :key="agent.name" @click="selectAgent(agent.id)">
-                    {{ agent.name }}
+                    {{ agent.name }} ----> {{ agent.zone }}
                 </b-list-group-item> 
             </b-list-group>
+            <b-button primary @click="hideModal">Navigate to zones</b-button>
         </b-modal>
     </div>
 </template>
@@ -34,10 +35,11 @@
                 modalVisible: false,
                 agents: [],
                 solutions: {},
-                solutionStep: 0
+                solutionStep: 0,
+                startNavigation: false
             }
         },
-        mounted() {
+        async mounted() {
             // Create a new Two.js instance
             this.two = new Two({
                 type: Two.Types.canvas,
@@ -56,17 +58,24 @@
             sprite.translation.set(this.two.width / 2, this.two.height / 2);
             this.two.add(sprite);
 
+            // get solutions from the service
+            await this.getAgentPaths();
+
+            // get agent initial positions
+            let init1 = this.solutions.robot1[0];
+            let init2 = this.solutions.robot2[0];
+            let init3 = this.solutions.robot3[0];
+
             // create agents
-            this.agents.push(this.createNewAgent(50, 50, "Agent 1", "Zone 1"));
-            this.agents.push(this.createNewAgent(50,150, "Agent 2", "Zone 2"));
-            this.agents.push(this.createNewAgent(50,250, "Agent 3", "Zone 3"));
+            this.agents.push(this.createNewAgent(init1.x, init1.y, "Agent 1", "Zone 1"));
+            this.agents.push(this.createNewAgent(init2.x, init2.y, "Agent 2", "Zone 2"));
+            this.agents.push(this.createNewAgent(init3.x, init3.y, "Agent 3", "Zone 3"));
 
             // create zones
             this.createNewZone(60,60,200,200);
 
             this.animate();
 
-            this.getAgentPaths();
         },
         methods: {
             async getAgentPaths() {
@@ -84,19 +93,19 @@
 
                 // easier to type
                 let sol1 = this.solutions.robot1;
-                let sol2 = this.solutions.robot1;
-                let sol3 = this.solutions.robot1;
+                let sol2 = this.solutions.robot2;
+                let sol3 = this.solutions.robot3;
 
-                if(sol1 && sol2 && sol3) {
+                if(sol1 && sol2 && sol3 && this.startNavigation) {
                     if(sol1.length > this.solutionStep) {
                         let step = sol1[this.solutionStep]
                         this.updateAgentPosition(agent1.id, step.x, step.y);
                     }
-                    if(this.solutions.robot2.length > this.solutionStep) {
+                    if(sol2.length > this.solutionStep) {
                         let step = sol2[this.solutionStep]
                         this.updateAgentPosition(agent2.id, step.x, step.y);
                     }
-                    if(this.solutions.robot3.length > this.solutionStep) {
+                    if(sol3.length > this.solutionStep) {
                         let step = sol3[this.solutionStep]
                         this.updateAgentPosition(agent3.id, step.x, step.y);
                     }
@@ -153,10 +162,11 @@
             },
             hideModal() {
                 this.modalVisible = false;
+                this.startNavigation = true;
             },
             selectAgent(agentId) {
-                this.hideModal();
                 console.log(agentId);
+
             }
         },
         beforeDestroy() {
